@@ -22,6 +22,9 @@ pub fn part2(inp: String) {
 
     'outer: for (i, x) in nums.iter().enumerate() {
         for (j, y) in nums[i..nums.len()].iter().enumerate() {
+            if x + y > 2020 {
+                continue;
+            }
             for (_, z) in nums[j..nums.len()].iter().enumerate() {
                 if x + y + z == 2020 {
                     println!("{}", x * y * z);
