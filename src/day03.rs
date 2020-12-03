@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-fn parse_input(mut input: String) -> (HashMap<(usize, usize), char>, usize, usize) {
+type Coord = (usize, usize);
+type Slope = (usize, usize);
+
+fn parse_input(mut input: String) -> (HashMap<Coord, char>, usize, usize) {
     let mut count_x = 0;
     let mut count_y = 0;
     let mut max_x = 0;
@@ -25,12 +28,8 @@ fn parse_input(mut input: String) -> (HashMap<(usize, usize), char>, usize, usiz
     }
     return (m, max_x, count_y);
 }
-fn count_trees(
-    m: &HashMap<(usize, usize), char>,
-    max_x: usize,
-    max_y: usize,
-    pattern: (usize, usize),
-) -> usize {
+
+fn count_trees(m: &HashMap<Coord, char>, max_x: usize, max_y: usize, pattern: Coord) -> usize {
     let mut curr_x = 0;
     let mut curr_y = 0;
     let mut num_trees = 0;
@@ -61,7 +60,7 @@ pub fn part1(input: String) {
 pub fn part2(input: String) {
     let (m, max_x, max_y) = parse_input(input);
     let mut sum = 1;
-    let slopes: Vec<(usize, usize)> = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)].to_vec();
+    let slopes: Vec<Slope> = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)].to_vec();
     for s in slopes {
         sum *= count_trees(&m, max_x, max_y, s);
     }
