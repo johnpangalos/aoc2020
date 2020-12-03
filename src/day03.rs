@@ -18,7 +18,6 @@ fn parse_input(mut input: String) -> (HashMap<Coord, char>, usize, usize) {
             }
             _ => {
                 m.insert((count_x, count_y), c);
-
                 if max_x < count_x {
                     max_x += 1;
                 }
@@ -42,7 +41,6 @@ fn count_trees(m: &HashMap<Coord, char>, max_x: usize, max_y: usize, slope: Slop
         if curr_y > max_y {
             break;
         }
-
         if *m.get(&(curr_x, curr_y)).unwrap() == '#' {
             num_trees += 1;
         }
