@@ -13,18 +13,20 @@ fn parse_input(mut input: String) -> (HashMap<Coord, char>, usize, usize) {
     input.pop();
 
     for c in input.chars() {
-        if c == '\n' {
-            count_x = 0;
-            count_y += 1;
-            continue;
-        }
+        match c {
+            '\n' => {
+                count_x = 0;
+                count_y += 1;
+            }
+            _ => {
+                m.insert((count_x, count_y), c);
 
-        m.insert((count_x, count_y), c);
-
-        if max_x < count_x {
-            max_x += 1;
+                if max_x < count_x {
+                    max_x += 1;
+                }
+                count_x += 1;
+            }
         }
-        count_x += 1;
     }
     return (m, max_x, count_y);
 }
