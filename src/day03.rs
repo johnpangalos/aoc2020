@@ -4,9 +4,7 @@ type Coord = (usize, usize);
 type Slope = (usize, usize);
 
 fn parse_input(mut input: String) -> (HashMap<Coord, char>, usize, usize) {
-    let mut count_x = 0;
-    let mut count_y = 0;
-    let mut max_x = 0;
+    let (mut count_x, mut count_y, mut max_x) = (0, 0, 0);
     let mut m = HashMap::new();
 
     // Remove trailing \n character
@@ -31,11 +29,9 @@ fn parse_input(mut input: String) -> (HashMap<Coord, char>, usize, usize) {
     return (m, max_x, count_y);
 }
 
-fn count_trees(m: &HashMap<Coord, char>, max_x: usize, max_y: usize, pattern: Coord) -> usize {
-    let mut curr_x = 0;
-    let mut curr_y = 0;
-    let mut num_trees = 0;
-    let (x, y) = pattern;
+fn count_trees(m: &HashMap<Coord, char>, max_x: usize, max_y: usize, slope: Slope) -> usize {
+    let (mut curr_x, mut curr_y, mut num_trees) = (0, 0, 0);
+    let (x, y) = slope;
 
     loop {
         curr_x += x;
@@ -61,12 +57,11 @@ pub fn part1(input: String) {
 
 pub fn part2(input: String) {
     let (m, max_x, max_y) = parse_input(input);
-    let mut sum = 1;
-    let slopes: Vec<Slope> = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)].to_vec();
-    for s in slopes {
-        sum *= count_trees(&m, max_x, max_y, s);
-    }
-    println!("{}", sum);
+    let slopes: Vec<Slope> = vec![(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+    let product = slopes
+        .iter()
+        .fold(1, |acc, s| acc * count_trees(&m, max_x, max_y, *s));
+    println!("{}", product);
 }
 
 #[cfg(test)]
