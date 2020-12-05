@@ -32,6 +32,44 @@ pub fn part1(input: String) {
 fn to_num(s: &str) -> usize {
     s.parse::<usize>().unwrap()
 }
+
+fn get_unit(s: &str) -> &str {
+    &s.split_at(s.len() - 2).1
+}
+
+fn is_inches(s: &str) -> bool {
+    get_unit(s) == "in"
+}
+
+fn is_cm(s: &str) -> bool {
+    get_unit(s) == "cm"
+}
+
+fn get_val_num(s: &str) -> usize {
+    s.split_at(s.len() - 2).0.parse().unwrap()
+}
+
+fn is_valid_eye_color(s: &str) -> bool {
+    vec!["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&s)
+}
+
+fn is_valid_hair_color(s: &str) -> bool {
+    let chars: Vec<char> = s.chars().collect();
+    chars.iter().enumerate().fold(true, |acc, (i, c)| {
+        if i == 0 {
+            return acc && c == &'#';
+        }
+        return acc && c.is_alphanumeric();
+    })
+}
+
+fn is_valid_passport_id(s: &str) -> bool {
+    s.chars()
+        .collect::<Vec<char>>()
+        .iter()
+        .fold(true, |acc, c| acc && c.is_numeric())
+}
+
 pub fn part2(input: String) {
     let mut lines: Vec<&str> = input.lines().collect();
 
@@ -39,15 +77,15 @@ pub fn part2(input: String) {
     lines.push("");
 
     let req_fields: Vec<&str> = vec!["ecl", "pid", "eyr", "hcl", "byr", "iyr", "hgt"];
-    let mut tracked_req_fields = req_fields.clone();
+    let mut curr_fields = req_fields.clone();
     let mut valid_passports = 0;
     for l in lines {
         match l {
             "" => {
-                if tracked_req_fields.len() == 0 {
+                if curr_fields.len() == 0 {
                     valid_passports += 1;
                 }
-                tracked_req_fields = req_fields.clone();
+                curr_fields = req_fields.clone();
             }
             _ => {
                 let key_vals: Vec<&str> = l.split(|c| (c == ' ') || (c == ':')).collect();
@@ -64,67 +102,28 @@ pub fn part2(input: String) {
                     match *kv {
                         ("byr", val) if to_num(val) < 1920 => continue,
                         ("byr", val) if to_num(val) > 2002 => continue,
-                        ("byr", _) => tracked_req_fields.retain(|f| f != &"byr"),
 
                         ("iyr", val) if to_num(val) < 2010 => continue,
                         ("iyr", val) if to_num(val) > 2020 => continue,
-                        ("iyr", _) => tracked_req_fields.retain(|f| f != &"iyr"),
 
                         ("eyr", val) if to_num(val) < 2020 => continue,
                         ("eyr", val) if to_num(val) > 2030 => continue,
-                        ("eyr", _) => tracked_req_fields.retain(|f| f != &"eyr"),
 
-                        ("hgt", val) => {
-                            let (v, unit) = val.split_at(val.len() - 2);
-                            if unit != "cm" && unit != "in" {
-                                continue;
-                            }
-                            let val_num: usize = v.parse().unwrap();
-
-                            match unit {
-                                "cm" if val_num < 150 => continue,
-                                "cm" if val_num > 193 => continue,
-                                "cm" => tracked_req_fields.retain(|f| f != &"hgt"),
-
-                                "in" if val_num < 59 => continue,
-                                "in" if val_num > 76 => continue,
-                                "in" => tracked_req_fields.retain(|f| f != &"hgt"),
-
-                                _ => (),
-                            }
-                        }
+                        ("hgt", val) if !vec!["cm", "in"].contains(&get_unit(val)) => continue,
+                        ("hgt", val) if is_cm(val) && get_val_num(val) < 150 => continue,
+                        ("hgt", val) if is_cm(val) && get_val_num(val) > 193 => continue,
+                        ("hgt", val) if is_inches(val) && get_val_num(val) < 59 => continue,
+                        ("hgt", val) if is_inches(val) && get_val_num(val) > 76 => continue,
 
                         ("hcl", val) if val.len() != 7 => continue,
-                        ("hcl", val) => {
-                            let chars: Vec<char> = val.chars().collect();
-                            let valid: bool = chars.iter().enumerate().fold(true, |acc, (i, c)| {
-                                if i == 0 {
-                                    return acc && c == &'#';
-                                }
-                                return acc && c.is_alphanumeric();
-                            });
-                            if valid {
-                                tracked_req_fields.retain(|f| f != &"hcl")
-                            }
-                        }
+                        ("hcl", val) if !is_valid_hair_color(val) => continue,
 
-                        ("ecl", val) => {
-                            let colors: Vec<&str> =
-                                vec!["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
-                            if colors.contains(&val) {
-                                tracked_req_fields.retain(|f| f != &"ecl")
-                            }
-                        }
+                        ("ecl", val) if !is_valid_eye_color(val) => continue,
+
                         ("pid", val) if val.len() != 9 => continue,
-                        ("pid", val) => {
-                            let chars: Vec<char> = val.chars().collect();
-                            let valid: bool =
-                                chars.iter().fold(true, |acc, c| acc && c.is_numeric());
-                            if valid {
-                                tracked_req_fields.retain(|f| f != &"pid")
-                            }
-                        }
+                        ("pid", val) if !is_valid_passport_id(val) => continue,
 
+                        (key, _) if req_fields.contains(&key) => curr_fields.retain(|f| f != &key),
                         _ => (),
                     }
                 }
