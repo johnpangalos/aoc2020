@@ -19,30 +19,22 @@ pub fn part1(input: String) {
 }
 
 pub fn part2(input: String) {
-    let mut curr_chars: Vec<char> = vec![];
-    let mut lines = input.lines().collect::<Vec<&str>>();
-    let mut lines_fixed = vec![""];
-    lines_fixed.append(&mut lines);
-    lines_fixed.append(&mut vec![""]);
+    let lines = input.lines().collect::<Vec<&str>>();
+    let sum: usize = lines.split(|x| x.is_empty()).fold(0, |mut acc, x| {
+        let (first, rest) = x.split_first().unwrap();
+        let mut common_chars: Vec<char> = first.chars().collect();
 
-    let sum = lines_fixed.iter().enumerate().fold(0, |mut acc, (i, l)| {
-        match l {
-            l if l.is_empty() => {
-                acc += curr_chars.len();
-                if i != lines_fixed.len() - 1 {
-                    curr_chars = lines_fixed[i + 1].chars().collect();
-                }
-            }
+        rest.iter().for_each(|l| {
+            let mut temp: Vec<char> = vec![];
+            l.chars().for_each(|c| match c {
+                c if temp.contains(&c) => (),
+                c if common_chars.contains(&c) => temp.push(c),
+                _ => (),
+            });
+            common_chars = temp;
+        });
 
-            _ => {
-                let mut common_chars: Vec<char> = vec![];
-                l.chars().for_each(|c| match c {
-                    c if curr_chars.contains(&c) => common_chars.push(c),
-                    _ => (),
-                });
-                curr_chars = common_chars;
-            }
-        }
+        acc += common_chars.len();
         return acc;
     });
     println!("{}", sum);
