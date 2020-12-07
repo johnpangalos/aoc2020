@@ -1,18 +1,21 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
 const CONTAINS: &str = " contain ";
 const EMPTY_BAG: &str = "no other bags";
 const BAGS: &str = "bags";
 const BAG: &str = "bag";
 
-fn get_parents(h: &mut HashMap<String, Vec<String>>, bag: String) -> Vec<String> {
+type ParentHash = HashMap<String, Vec<String>>;
+
+fn get_parents(h: Rc<ParentHash>, bag: String) -> Vec<String> {
     let bag_parents = match h.get(&bag) {
         Some(vector) => vector,
         None => return vec![],
     };
     let mut vec_parents = bag_parents.to_vec();
     for b in bag_parents {
-        let v = get_parents(&mut h.clone(), b.to_string());
+        let v = get_parents(Rc::clone(&h), b.to_string());
         for item in v {
             match vec_parents.contains(&item) {
                 true => (),
@@ -51,7 +54,10 @@ pub fn part1(input: String) {
         }
     }
 
-    println!("{}", get_parents(&mut h, "shiny gold".to_string()).len());
+    println!(
+        "{}",
+        get_parents(Rc::new(h), "shiny gold".to_string()).len()
+    );
 }
 
 #[cfg(test)]
