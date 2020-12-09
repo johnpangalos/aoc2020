@@ -11,7 +11,7 @@ fn check_prev(vals: &Vec<usize>, idx: usize, size: usize) -> bool {
     if idx < size {
         return true;
     }
-    (idx - size..=idx).collect::<Vec<usize>>().iter().any(|&i| {
+    (idx - size..=idx).any(|i| {
         for j in idx - size..=idx {
             match j {
                 index if index == i => continue,
