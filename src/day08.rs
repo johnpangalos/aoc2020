@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 const ACC_INST: &str = "acc";
 const NOOP_INST: &str = "nop";
 const JUMP_INST: &str = "jmp";
@@ -14,20 +16,10 @@ pub fn part1(input: String) {
         .iter()
         .map(|x| x.to_string())
         .collect();
-    println!("{}", int_comp(list).0);
+    println!("{}", int_comp(&list, 1000000000000).0);
 }
 
-fn change_inst(list: &mut Vec<String>, idx: usize) {
-    let temp: String;
-
-    match list[idx].contains(&JUMP_INST) {
-        true => temp = list[idx].replace(JUMP_INST, NOOP_INST),
-        false => temp = list[idx].replace(NOOP_INST, JUMP_INST),
-    };
-    list[idx] = temp;
-}
-
-fn int_comp(list: Vec<String>) -> (isize, bool) {
+fn int_comp(list: &Vec<String>, idx: usize) -> (isize, bool) {
     let mut acc: isize = 0;
     let mut curr_inst: isize = 0;
     let mut run_inst: Vec<isize> = vec![];
@@ -39,7 +31,12 @@ fn int_comp(list: Vec<String>) -> (isize, bool) {
 
         match parse_instruction(&list[curr_inst as usize]) {
             (ACC_INST, val) => acc += val,
+            (NOOP_INST, val) if curr_inst as usize == idx => {
+                curr_inst += val;
+                continue;
+            }
             (NOOP_INST, _) => (),
+            (JUMP_INST, _) if curr_inst as usize == idx => (),
             (JUMP_INST, val) => {
                 curr_inst += val;
                 continue;
@@ -60,25 +57,20 @@ pub fn part2(input: String) {
         .collect();
 
     let mut v_changed: Vec<usize> = vec![];
-    loop {
-        let (idx, _) = list
-            .iter()
-            .enumerate()
-            .find(|(i, item)| {
-                (item.contains(JUMP_INST) || item.contains(NOOP_INST)) && !v_changed.contains(i)
-            })
-            .unwrap();
+    for (i, item) in list.iter().enumerate() {
+        if !item.contains(JUMP_INST) && !item.contains(NOOP_INST) {
+            continue;
+        }
+        v_changed.push(i);
+    }
 
-        v_changed.push(idx);
-
-        let mut curr_list = list.clone();
-        change_inst(&mut curr_list, idx);
-        let (acc, to_break) = int_comp(curr_list);
+    v_changed.par_iter().find_any(|&&idx| {
+        let (acc, to_break) = int_comp(&list, idx);
         if to_break {
             println!("{}", acc);
-            break;
         }
-    }
+        return to_break;
+    });
 }
 
 #[cfg(test)]
