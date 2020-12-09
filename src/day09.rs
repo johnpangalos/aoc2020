@@ -2,15 +2,15 @@ fn find_invalid(vals: &Vec<usize>, size: usize) -> &usize {
     let (_, val) = vals
         .iter()
         .enumerate()
-        .find(|(i, _)| match i {
-            i if *i < size => return false,
-            i => !check_prev(&vals, *i, size),
-        })
+        .find(|(i, _)| !check_prev(&vals, *i, size))
         .unwrap();
     val
 }
 
 fn check_prev(vals: &Vec<usize>, idx: usize, size: usize) -> bool {
+    if idx < size {
+        return true;
+    }
     (idx - size..=idx).collect::<Vec<usize>>().iter().any(|&i| {
         for j in idx - size..=idx {
             match j {
@@ -24,12 +24,7 @@ fn check_prev(vals: &Vec<usize>, idx: usize, size: usize) -> bool {
 }
 
 fn get_vals(input: String) -> Vec<usize> {
-    input
-        .lines()
-        .collect::<Vec<&str>>()
-        .iter()
-        .map(|x| x.parse::<usize>().unwrap())
-        .collect()
+    input.lines().map(|x| x.parse::<usize>().unwrap()).collect()
 }
 
 pub fn part1(input: String) {
