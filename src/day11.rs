@@ -12,6 +12,17 @@ struct Seat {
     to_change: bool,
 }
 
+impl Seat {
+    fn new(status: Status) -> Seat {
+        Seat {
+            status: status,
+            to_change: false,
+        }
+    }
+}
+
+type Map = FxHashMap<Coord, Seat>;
+
 #[derive(PartialEq, Eq, Hash)]
 enum Status {
     Empty,
@@ -19,8 +30,8 @@ enum Status {
     Floor,
 }
 
-fn create_hash(mut input: String) -> (FxHashMap<Coord, Seat>, isize, isize) {
-    let mut h: FxHashMap<Coord, Seat> = FxHashMap::default();
+fn create_hash(mut input: String) -> (Map, isize, isize) {
+    let mut h: Map = FxHashMap::default();
 
     // Remove last line break for ease of parsing
     input.pop();
@@ -38,33 +49,15 @@ fn create_hash(mut input: String) -> (FxHashMap<Coord, Seat>, isize, isize) {
                 y_count += 1;
             }
             'L' => {
-                h.insert(
-                    coord,
-                    Seat {
-                        status: Status::Empty,
-                        to_change: false,
-                    },
-                );
+                h.insert(coord, Seat::new(Status::Empty));
                 x_count += 1;
             }
             '.' => {
-                h.insert(
-                    coord,
-                    Seat {
-                        status: Status::Floor,
-                        to_change: false,
-                    },
-                );
+                h.insert(coord, Seat::new(Status::Floor));
                 x_count += 1;
             }
             '#' => {
-                h.insert(
-                    coord,
-                    Seat {
-                        status: Status::Occupied,
-                        to_change: false,
-                    },
-                );
+                h.insert(coord, Seat::new(Status::Occupied));
                 x_count += 1;
             }
             _ => (),
@@ -74,7 +67,7 @@ fn create_hash(mut input: String) -> (FxHashMap<Coord, Seat>, isize, isize) {
     (h, x_count, y_count)
 }
 
-fn num_adjacent(h: &FxHashMap<Coord, Seat>, coord: &Coord) -> usize {
+fn num_adjacent(h: &Map, coord: &Coord, _: isize, _: isize) -> usize {
     let mut acc: usize = 0;
     for i in (-1 as isize)..=1 {
         for j in (-1 as isize)..=1 {
@@ -93,32 +86,40 @@ fn num_adjacent(h: &FxHashMap<Coord, Seat>, coord: &Coord) -> usize {
     acc
 }
 
-pub fn part1(input: String) {
-    let (mut h, x_count, y_count) = create_hash(input);
+fn mark_to_switch(
+    h: &mut Map,
+    x_max: isize,
+    y_max: isize,
+    func: fn(&Map, &Coord, isize, isize) -> usize,
+) {
+    for x in 0..x_max {
+        for y in 0..=y_max {
+            let coord = Coord { x: x, y: y };
+            let adjacent = func(&h, &coord, 0, 0);
+            let seat = h.get_mut(&coord).unwrap();
+            let to_switch: bool = match seat.status {
+                Status::Empty if adjacent == 0 => true,
+                Status::Floor => continue,
+                Status::Occupied if adjacent >= 4 => true,
+                Status::Occupied => continue,
+                Status::Empty => continue,
+            };
 
-    loop {
-        for x in 0..x_count {
-            for y in 0..=y_count {
-                let coord = Coord { x: x, y: y };
-                let adjacent = num_adjacent(&h, &coord);
-                let seat = h.get_mut(&coord).unwrap();
-                let to_switch: bool = match seat.status {
-                    Status::Empty if adjacent == 0 => true,
-                    Status::Floor => continue,
-                    Status::Occupied if adjacent >= 4 => true,
-                    Status::Occupied => false,
-                    Status::Empty => false,
-                };
-
-                match to_switch {
-                    true => h.get_mut(&coord).unwrap().to_change = true,
-                    _ => (),
-                }
+            match to_switch {
+                true => h.get_mut(&coord).unwrap().to_change = true,
+                _ => (),
             }
         }
+    }
+}
 
-        let mut acc = 0;
-        h.iter_mut().for_each(|(_, mut v)| {
+pub fn part1(input: String) {
+    let (mut h, x_max, y_max) = create_hash(input);
+
+    loop {
+        mark_to_switch(&mut h, x_max, y_max, num_adjacent);
+
+        let acc = h.iter_mut().fold(0, |mut acc, (_, mut v)| {
             match v.status {
                 Status::Empty if v.to_change => {
                     acc += 1;
@@ -132,6 +133,7 @@ pub fn part1(input: String) {
                 }
                 _ => (),
             };
+            acc
         });
 
         if acc == 0 {
@@ -150,13 +152,11 @@ pub fn part1(input: String) {
     )
 }
 
-fn num_adjacent_part_2(
-    h: &FxHashMap<Coord, Seat>,
-    coord: &Coord,
-    x_max: isize,
-    y_max: isize,
-) -> usize {
+fn num_adjacent_part_2(h: &Map, coord: &Coord, x_max: isize, y_max: isize) -> usize {
     let mut acc: usize = 0;
+    if h.get(&coord).unwrap().status == Status::Floor {
+        return 0;
+    }
     for i in (-1 as isize)..=1 {
         for j in (-1 as isize)..=1 {
             if i == 0 && j == 0 {
@@ -237,18 +237,6 @@ pub fn part2(input: String) {
         if acc == 0 {
             break;
         }
-        // for y in 0..=y_count {
-        // for x in 0..x_count {
-        // let coord = Coord { x: x, y: y };
-        // match h.get(&coord).unwrap().status {
-        // Status::Empty => print!("L"),
-        // Status::Floor => print!("."),
-        // Status::Occupied => print!("#"),
-        // }
-        // }
-        // println!();
-        // }
-        // println!();
     }
 
     println!(
