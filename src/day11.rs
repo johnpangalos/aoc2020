@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use rustc_hash::FxHashMap;
 
 #[derive(PartialEq, Eq, Hash)]
 struct Coord {
@@ -19,8 +19,8 @@ enum Status {
     Floor,
 }
 
-fn create_hash(mut input: String) -> (HashMap<Coord, Seat>, isize, isize) {
-    let mut h: HashMap<Coord, Seat> = HashMap::new();
+fn create_hash(mut input: String) -> (FxHashMap<Coord, Seat>, isize, isize) {
+    let mut h: FxHashMap<Coord, Seat> = FxHashMap::default();
 
     // Remove last line break for ease of parsing
     input.pop();
@@ -74,7 +74,7 @@ fn create_hash(mut input: String) -> (HashMap<Coord, Seat>, isize, isize) {
     (h, x_count, y_count)
 }
 
-fn num_adjacent(h: &HashMap<Coord, Seat>, coord: &Coord) -> usize {
+fn num_adjacent(h: &FxHashMap<Coord, Seat>, coord: &Coord) -> usize {
     let mut acc: usize = 0;
     for i in (-1 as isize)..=1 {
         for j in (-1 as isize)..=1 {
@@ -151,7 +151,7 @@ pub fn part1(input: String) {
 }
 
 fn num_adjacent_part_2(
-    h: &HashMap<Coord, Seat>,
+    h: &FxHashMap<Coord, Seat>,
     coord: &Coord,
     x_max: isize,
     y_max: isize,
@@ -180,7 +180,7 @@ fn num_adjacent_part_2(
                             Some(seat) if seat.status == Status::Empty => break,
                             _ => {}
                         }
-                        if new_x >= x_max || new_y >= y_max || new_x <= 0 || new_y <= 0 {
+                        if new_x > x_max || new_y > y_max || new_x < 0 || new_y < 0 {
                             break;
                         }
                         counter += 1;
