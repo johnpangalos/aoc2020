@@ -64,18 +64,13 @@ pub fn part2(input: String) {
                     h.insert(next, vec![turn]);
                 }
                 Some(val) => {
-                    let mut temp = val.clone();
-                    temp.push(turn);
-                    h.insert(next, temp);
+                    h.insert(next, vec![*val.get(val.len() - 1).unwrap(), turn]);
                 }
             }
             last_spoken = next;
         }
 
         turn += 1;
-        if turn % 100000 == 0 {
-            println!("Turn: {}", turn);
-        }
     }
 
     println!("{}", last_spoken);
