@@ -40,34 +40,27 @@ pub fn part1(input: String) {
 }
 
 pub fn part2(input: String) {
-    let nums: Vec<usize> = input
+    let nums: Vec<isize> = input
         .split(",")
-        .filter_map(|x| x.parse::<usize>().ok())
+        .filter_map(|x| x.parse::<isize>().ok())
         .collect();
-    let mut turn = 1;
+    let mut turn: isize = 1;
     let mut last_spoken = 0;
-    let mut h: FxHashMap<usize, Vec<usize>> = FxHashMap::default();
+    let mut h: FxHashMap<isize, isize> = FxHashMap::default();
 
     while turn != 30000001 {
-        if turn <= nums.len() {
-            let start_num = *nums.get(turn - 1).unwrap();
-            h.insert(start_num, vec![turn]);
+        if turn as usize <= nums.len() {
+            let start_num = *nums.get(turn as usize - 1).unwrap();
+            h.insert(start_num, turn);
             last_spoken = start_num;
         } else {
-            let next = match h.get(&last_spoken) {
+            let spoken = match h.get(&last_spoken) {
                 None => 0,
-                Some(v) if v.len() == 1 => 0,
-                Some(v) => v.get(v.len() - 1).unwrap() - v.get(v.len() - 2).unwrap(),
+                Some(val) => (turn - 1) - val,
             };
-            match h.get(&next) {
-                None => {
-                    h.insert(next, vec![turn]);
-                }
-                Some(val) => {
-                    h.insert(next, vec![*val.get(val.len() - 1).unwrap(), turn]);
-                }
-            }
-            last_spoken = next;
+
+            h.insert(last_spoken, turn - 1);
+            last_spoken = spoken;
         }
 
         turn += 1;
@@ -92,6 +85,6 @@ mod tests {
 
     #[test]
     fn day15_ts3() {
-        part2("1,3,2".to_owned());
+        part2("0,3,6".to_owned());
     }
 }
