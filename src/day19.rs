@@ -94,34 +94,35 @@ pub fn part2(input: String) {
     let forty_two = create_cases_from_rule(&rules, 42);
     let thirty_one = create_cases_from_rule(&rules, 31);
     let mut acc = 0;
+    fn chunk_range(i: usize) -> std::ops::Range<usize> {
+        (i * 8)..((i + 1) * 8)
+    }
     for c in cases {
-        let num_42;
         let num_chunks = c.len() / 8;
-        if num_chunks % 2 == 0 {
-            num_42 = num_chunks - (num_chunks / 2 - 1);
-        } else {
-            num_42 = num_chunks - ((num_chunks - 1) / 2);
-        }
-        let num_both: isize = num_chunks as isize - num_42 as isize - 1;
+        let num_42 = match num_chunks % 2 == 0 {
+            true => num_chunks - (num_chunks / 2 - 1),
+            false => num_chunks - ((num_chunks - 1) / 2),
+        };
+
+        let num_both = num_chunks - num_42 - 1;
 
         let valid_42: bool = (0..num_42)
             .collect::<Vec<usize>>()
             .iter()
-            .all(|i| forty_two.contains(&c[(i * 8)..((i + 1) * 8)].to_owned()));
+            .all(|&i| forty_two.contains(&c[chunk_range(i)].to_owned()));
 
-        let mut valid_both = true;
-
-        if num_both > 0 {
-            valid_both = (num_42..(num_both as usize + num_42))
+        let valid_both = match num_both > 0 {
+            true => (num_42..(num_both + num_42))
                 .collect::<Vec<usize>>()
                 .iter()
-                .all(|i| {
-                    forty_two.contains(&c[(i * 8)..((i + 1) * 8)].to_owned())
-                        || thirty_one.contains(&c[(i * 8)..((i + 1) * 8)].to_owned())
-                });
-        }
+                .all(|&i| {
+                    forty_two.contains(&c[chunk_range(i)].to_owned())
+                        || thirty_one.contains(&c[chunk_range(i)].to_owned())
+                }),
+            false => true,
+        };
 
-        let valid_31 = thirty_one.contains(&c[((num_chunks - 1) * 8)..].to_owned());
+        let valid_31 = thirty_one.contains(&c[chunk_range(num_chunks - 1)].to_owned());
         if valid_42 && valid_both && valid_31 {
             acc += 1;
         }
