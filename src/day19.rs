@@ -72,11 +72,17 @@ pub fn part1(input: String) {
     let thirty_one = create_cases_from_rule(&rules, 31);
     let mut acc = 0;
     for c in cases {
-        if c.len() == 24
-            && forty_two.contains(&c[0..=7].to_owned())
-            && forty_two.contains(&c[8..=15].to_owned())
-            && thirty_one.contains(&c[16..].to_owned())
-        {
+        if c.len() != 24 {
+            continue;
+        }
+        let valid_42: bool = (0..2)
+            .collect::<Vec<usize>>()
+            .iter()
+            .all(|i| forty_two.contains(&c[(i * 8)..((i + 1) * 8)].to_owned()));
+
+        let valid_31 = thirty_one.contains(&c[(2 * 8)..].to_owned());
+
+        if valid_42 && valid_31 {
             acc += 1;
         }
     }
@@ -89,105 +95,34 @@ pub fn part2(input: String) {
     let thirty_one = create_cases_from_rule(&rules, 31);
     let mut acc = 0;
     for c in cases {
-        if c.len() == 24
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && thirty_one.contains(&c[16..].to_owned())
-        {
-            acc += 1;
+        let num_42;
+        let num_chunks = c.len() / 8;
+        if num_chunks % 2 == 0 {
+            num_42 = num_chunks - (num_chunks / 2 - 1);
+        } else {
+            num_42 = num_chunks - ((num_chunks - 1) / 2);
         }
-        if c.len() == 32
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && thirty_one.contains(&c[24..].to_owned())
-        {
-            acc += 1;
+        let num_both: isize = num_chunks as isize - num_42 as isize - 1;
+
+        let valid_42: bool = (0..num_42)
+            .collect::<Vec<usize>>()
+            .iter()
+            .all(|i| forty_two.contains(&c[(i * 8)..((i + 1) * 8)].to_owned()));
+
+        let mut valid_both = true;
+
+        if num_both > 0 {
+            valid_both = (num_42..(num_both as usize + num_42))
+                .collect::<Vec<usize>>()
+                .iter()
+                .all(|i| {
+                    forty_two.contains(&c[(i * 8)..((i + 1) * 8)].to_owned())
+                        || thirty_one.contains(&c[(i * 8)..((i + 1) * 8)].to_owned())
+                });
         }
 
-        if c.len() == 40
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && (forty_two.contains(&c[24..32].to_owned())
-                || thirty_one.contains(&c[24..32].to_owned()))
-            && thirty_one.contains(&c[32..].to_owned())
-        {
-            acc += 1;
-        }
-
-        if c.len() == 48
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && forty_two.contains(&c[24..32].to_owned())
-            && (forty_two.contains(&c[32..40].to_owned())
-                || thirty_one.contains(&c[32..40].to_owned()))
-            && thirty_one.contains(&c[40..].to_owned())
-        {
-            acc += 1;
-        }
-
-        if c.len() == 56
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && forty_two.contains(&c[24..32].to_owned())
-            && (forty_two.contains(&c[32..40].to_owned())
-                || thirty_one.contains(&c[32..40].to_owned()))
-            && (forty_two.contains(&c[40..48].to_owned())
-                || thirty_one.contains(&c[40..48].to_owned()))
-            && thirty_one.contains(&c[48..].to_owned())
-        {
-            acc += 1;
-        }
-
-        if c.len() == 64
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && forty_two.contains(&c[24..32].to_owned())
-            && forty_two.contains(&c[32..40].to_owned())
-            && (forty_two.contains(&c[40..48].to_owned())
-                || thirty_one.contains(&c[40..48].to_owned()))
-            && (forty_two.contains(&c[48..56].to_owned())
-                || thirty_one.contains(&c[48..56].to_owned()))
-            && thirty_one.contains(&c[56..].to_owned())
-        {
-            acc += 1;
-        }
-
-        if c.len() == 72
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && forty_two.contains(&c[24..32].to_owned())
-            && forty_two.contains(&c[32..40].to_owned())
-            && forty_two.contains(&c[40..48].to_owned())
-            && (forty_two.contains(&c[48..56].to_owned())
-                || thirty_one.contains(&c[48..56].to_owned()))
-            && (forty_two.contains(&c[56..64].to_owned())
-                || thirty_one.contains(&c[56..64].to_owned()))
-            && thirty_one.contains(&c[64..].to_owned())
-        {
-            acc += 1;
-        }
-
-        if c.len() == 80
-            && forty_two.contains(&c[0..8].to_owned())
-            && forty_two.contains(&c[8..16].to_owned())
-            && forty_two.contains(&c[16..24].to_owned())
-            && forty_two.contains(&c[24..32].to_owned())
-            && forty_two.contains(&c[32..40].to_owned())
-            && forty_two.contains(&c[40..48].to_owned())
-            && (forty_two.contains(&c[48..56].to_owned())
-                || thirty_one.contains(&c[48..56].to_owned()))
-            && (forty_two.contains(&c[56..64].to_owned())
-                || thirty_one.contains(&c[56..64].to_owned()))
-            && (forty_two.contains(&c[64..72].to_owned())
-                || thirty_one.contains(&c[64..72].to_owned()))
-            && thirty_one.contains(&c[72..].to_owned())
-        {
+        let valid_31 = thirty_one.contains(&c[((num_chunks - 1) * 8)..].to_owned());
+        if valid_42 && valid_both && valid_31 {
             acc += 1;
         }
     }
@@ -213,9 +148,5 @@ mod tests {
     #[test]
     fn day19_ts1() {
         part1(TEST_CASE_1.to_owned());
-        // let (rules, cases) = parse(TEST_CASE_1.to_owned());
-        // println!("rules: {:?}", rules);
-        // println!("cases: {:?}", cases);
-        // println!("all cases: {:?}", create_cases_from_rule(&rules, 0));
     }
 }
